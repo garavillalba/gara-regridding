@@ -32,7 +32,6 @@ integer :: localrc
 type(ESMF_RouteHandle) :: routehandle
 type(ESMF_Grid) :: grid, STEMgrid
 type(ESMF_Field) :: field, STEMfield
-type(ESMF_ArraySpec) :: arrayspec, STEMarrayspec
 type(ESMF_VM) :: vm
 
 character(len=200) :: vulcangrid, vulcandata
@@ -69,17 +68,14 @@ if (localrc /= ESMF_SUCCESS) return
 
 
 ! Create source/destination fields
-call ESMF_ArraySpecSet(arrayspec, 4, ESMF_TYPEKIND_R8, rc=localrc)
-if (localrc /= ESMF_SUCCESS) return
-
-field = ESMF_FieldCreate(grid, arrayspec, staggerloc=ESMF_STAGGERLOC_CENTER, &
-    ungriddedLBound=(/1,1/), ungriddedUBound=(/1,365*24/), &
+field = ESMF_FieldCreate(grid, ESMF_TYPEKIND_R8, staggerloc=ESMF_STAGGERLOC_CENTER, &
+    ungriddedLBound=(/1,1/), ungriddedUBound=(/1,24/), &
     name="field", rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
 
 call ESMF_FieldRead(field, vulcandata, &
-    variableName="CO2_FLUX", timeslice=365*24, rc=localrc)
+    variableName="CO2_FLUX", timeslice=24, rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
 call ESMF_FieldPrint(field)
@@ -89,15 +85,12 @@ call ESMF_FieldPrint(field)
 ! Grid create from file
 STEMgrid = ESMF_GridCreate(&
     "/software/co2flux/Saved_WRF_runs/wrfout_d01_2015-03-05_00:00:00", &
-    ESMF_FILEFORMAT_GRIDSPEC, coord_names=["XLAT","XLONG"], rc=localrc)
+    ESMF_FILEFORMAT_GRIDSPEC, rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
 
 ! Create source/destination fields
-call ESMF_ArraySpecSet(STEMarrayspec, 4, ESMF_TYPEKIND_R8, rc=localrc)
-if (localrc /= ESMF_SUCCESS) return
-
-STEMfield = ESMF_FieldCreate(STEMgrid, STEMarrayspec, staggerloc=ESMF_STAGGERLOC_CENTER, &
+STEMfield = ESMF_FieldCreate(STEMgrid, ESMF_TYPEKIND_R8, staggerloc=ESMF_STAGGERLOC_CENTER, &
     ungriddedLBound=(/1,1/), ungriddedUBound=(/365*24,1/), gridToFieldMap=(/3, 4/), &
     name="STEMfield", rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
@@ -110,8 +103,6 @@ if (localrc /= ESMF_SUCCESS) return
 
 call ESMF_FieldRegrid(field, STEMfield, routehandle, rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
-
-
 
 
 ! Destroy the Fields
