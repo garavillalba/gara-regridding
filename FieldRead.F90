@@ -35,6 +35,7 @@ type(ESMF_Field) :: field, STEMfield
 type(ESMF_ArraySpec) :: arrayspec, STEMarrayspec
 type(ESMF_VM) :: vm
 
+character(len=200) :: vulcangrid, vulcandata
 
 integer :: localPet, petCount
 
@@ -45,6 +46,11 @@ integer :: finalrc
 correct=.true.
 
 rc=ESMF_SUCCESS
+
+vulcangrid = "/software/co2flux/FieldRead/vulcangrid.10.2012.nc"
+!vulcangrid = "/home/ryan/sandbox/gara-regridding/vulcangrid.10.2012.nc"
+vulcandata = "/software/co2flux/SurfaceFluxData/VULCAN/reversed_vulcan_fossilCO2_ioapi.nc"
+!vulcandata = "/home/ryan/sandbox/gara-regridding/reversed_vulcan_fossilCO2_ioapi.nc"
 
 ! get pet info
 call ESMF_VMGetGlobal(vm, rc=localrc)
@@ -57,11 +63,8 @@ if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
 line=__LINE__, file=__FILE__, rcToReturn=rc)) &
 call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
-
 ! Grid create from file
-grid = ESMF_GridCreate(&
-    "/software/co2flux/FieldRead/vulcangrid.10.2012.nc", &
-    ESMF_FILEFORMAT_GRIDSPEC, rc=localrc)
+grid = ESMF_GridCreate(vulcangrid, ESMF_FILEFORMAT_GRIDSPEC, rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
 
@@ -70,14 +73,13 @@ call ESMF_ArraySpecSet(arrayspec, 4, ESMF_TYPEKIND_R8, rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
 field = ESMF_FieldCreate(grid, arrayspec, staggerloc=ESMF_STAGGERLOC_CENTER, &
-    ungriddedLBound=(/1,1/), ungriddedUBound=(/365*24,1/), gridToFieldMap=(/3, 4/), &
+    ungriddedLBound=(/1,1/), ungriddedUBound=(/1,24/), gridToFieldMap=(/1,2/), &
     name="field", rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
 
-call ESMF_FieldRead(field, &
-    "/software/co2flux/SurfaceFluxData/VULCAN/reversed_vulcan_fossilCO2_ioapi.nc", &
-    variableName="CO2_FLUX", timeslice=365*24, rc=localrc)
+call ESMF_FieldRead(field, vulcandata, &
+    variableName="CO2_FLUX", timeslice=24, rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
 call ESMF_FieldPrint(field)
