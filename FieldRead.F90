@@ -73,13 +73,13 @@ call ESMF_ArraySpecSet(arrayspec, 4, ESMF_TYPEKIND_R8, rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
 field = ESMF_FieldCreate(grid, arrayspec, staggerloc=ESMF_STAGGERLOC_CENTER, &
-    ungriddedLBound=(/1,1/), ungriddedUBound=(/1,24/), gridToFieldMap=(/1,2/), &
+    ungriddedLBound=(/1,1/), ungriddedUBound=(/1,365*24/), &
     name="field", rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
 
 call ESMF_FieldRead(field, vulcandata, &
-    variableName="CO2_FLUX", timeslice=24, rc=localrc)
+    variableName="CO2_FLUX", timeslice=365*24, rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
 call ESMF_FieldPrint(field)
@@ -89,7 +89,7 @@ call ESMF_FieldPrint(field)
 ! Grid create from file
 STEMgrid = ESMF_GridCreate(&
     "/software/co2flux/Saved_WRF_runs/wrfout_d01_2015-03-05_00:00:00", &
-    ESMF_FILEFORMAT_GRIDSPEC, rc=localrc)
+    ESMF_FILEFORMAT_GRIDSPEC, coord_names=["XLAT","XLONG"], rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
 
