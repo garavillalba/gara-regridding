@@ -3,9 +3,11 @@ import ocgis
 
 # wrfout file may need to be renamed to have a .nc ending for ocgis to recognize the format
 PATH_IN = "/software/co2flux/Saved_WRF_runs/wrfout_d01_2015-03-05_00:00:00"
+# PATH_IN = '/home/ryan/data/data/wrfout_link.nc'
 
-PATH_IN = '/home/ryan/data/data/wrfout_link.nc'
-PATH_OUT = 'subset_wrfout.nc'
+PATH_OUT = '/software/co2flux/Saved_WRF_runs/subset_wrfout.nc'
+# PATH_OUT = 'subset_wrfout.nc'
+
 VARS_TO_KEEP = ['XLONG', 'XLAT']
 
 

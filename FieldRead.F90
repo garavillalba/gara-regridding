@@ -34,7 +34,11 @@ type(ESMF_Grid) :: grid, STEMgrid
 type(ESMF_Field) :: field, STEMfield
 type(ESMF_VM) :: vm
 
-character(len=200) :: vulcangrid, vulcandata
+character(len=200) :: vulcangrid, vulcandata, stem_grid_file
+character(16), parameter :: apConv = 'Attribute_IO'
+character(16), parameter :: apPurp = 'attributes'
+
+integer :: timesteps
 
 integer :: localPet, petCount
 
@@ -47,77 +51,101 @@ correct=.true.
 rc=ESMF_SUCCESS
 
 vulcangrid = "/software/co2flux/FieldRead/vulcangrid.10.2012.nc"
-!vulcangrid = "/home/ryan/sandbox/gara-regridding/vulcangrid.10.2012.nc"
+! vulcangrid = "/home/ryan/sandbox/gara-regridding/vulcangrid.10.2012.nc"
 vulcandata = "/software/co2flux/SurfaceFluxData/VULCAN/reversed_vulcan_fossilCO2_ioapi.nc"
-!vulcandata = "/home/ryan/sandbox/gara-regridding/reversed_vulcan_fossilCO2_ioapi.nc"
+! vulcandata = "/home/ryan/sandbox/gara-regridding/reversed_vulcan_fossilCO2_ioapi.nc"
+stem_grid_file = "/software/co2flux/Saved_WRF_runs/subset_wrfout.nc"
+! stem_grid_file = "/home/ryan/sandbox/gara-regridding/subset_wrfout.nc"
 
-! get pet info
-call ESMF_VMGetGlobal(vm, rc=localrc)
-if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-line=__LINE__, file=__FILE__, rcToReturn=rc)) &
-call ESMF_Finalize(endflag=ESMF_END_ABORT)
+timesteps = 365*24
+! timesteps = 24
 
-call ESMF_VMGet(vm, petCount=petCount, localPet=localpet, rc=localrc)
-if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-line=__LINE__, file=__FILE__, rcToReturn=rc)) &
-call ESMF_Finalize(endflag=ESMF_END_ABORT)
+! SOURCE GRID AND FIELD
 
 ! Grid create from file
-grid = ESMF_GridCreate(vulcangrid, ESMF_FILEFORMAT_GRIDSPEC, rc=localrc)
-if (localrc /= ESMF_SUCCESS) return
+grid = ESMF_GridCreate(vulcangrid, ESMF_FILEFORMAT_GRIDSPEC, &
+    addCornerStagger=.true., & ! use this with 'bounds' in nc file to add CORNER stagger coordinates for conservative regridding
+    rc=localrc)
+    if (localrc /= ESMF_SUCCESS) return
 
-
-! Create source/destination fields
+! Create field
 field = ESMF_FieldCreate(grid, ESMF_TYPEKIND_R8, staggerloc=ESMF_STAGGERLOC_CENTER, &
-    ungriddedLBound=(/1,1/), ungriddedUBound=(/1,24/), &
+    ungriddedLBound=(/1, 1/), ungriddedUBound=(/1, timesteps/), &
     name="field", rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
-
+! Read Field data from file
 call ESMF_FieldRead(field, vulcandata, &
-    variableName="CO2_FLUX", timeslice=24, rc=localrc)
+    variableName="CO2_FLUX", timeslice=timesteps, rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
-call ESMF_FieldPrint(field)
-
-! DESTINATION GRID, AND FIELD
+! DESTINATION GRID AND FIELD
 
 ! Grid create from file
-STEMgrid = ESMF_GridCreate(&
-    "/software/co2flux/Saved_WRF_runs/wrfout_d01_2015-03-05_00:00:00", &
-    ESMF_FILEFORMAT_GRIDSPEC, rc=localrc)
+STEMgrid = ESMF_GridCreate(stem_grid_file, ESMF_FILEFORMAT_GRIDSPEC, &
+    addCornerStagger=.true., & ! use this with 'bounds' in nc file to add CORNER stagger coordinates for conservative regridding
+    rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
-
-! Create source/destination fields
+! Create Field
 STEMfield = ESMF_FieldCreate(STEMgrid, ESMF_TYPEKIND_R8, staggerloc=ESMF_STAGGERLOC_CENTER, &
-    ungriddedLBound=(/1,1/), ungriddedUBound=(/365*24,1/), gridToFieldMap=(/3, 4/), &
+    ungriddedLBound=(/1, 1/), ungriddedUBound=(/1, timesteps/), &
     name="STEMfield", rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
-! regrid
-call ESMF_FieldRegridStore(field, STEMfield, routehandle=routehandle,&
-regridMethod=ESMF_REGRIDMETHOD_CONSERVE,&
-unmappedAction=ESMF_UNMAPPEDACTION_ERROR, rc=localrc)
+
+! build interpolation matrix and return a routehandle
+call ESMF_FieldRegridStore(field, STEMfield, routehandle=routehandle, &
+    regridMethod=ESMF_REGRIDMETHOD_CONSERVE, &
+    unmappedAction=ESMF_UNMAPPEDACTION_ERROR, rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
+! apply the routehandle to the destination Field
 call ESMF_FieldRegrid(field, STEMfield, routehandle, rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
+! Field Print just for quick visual verification that everything worked
+call ESMF_FieldPrint(STEMfield, rc=localrc)
+if (localrc /= ESMF_SUCCESS) return
 
-! Destroy the Fields
+
+! write out the regridded Field data to file (set dimension names on grid first)
+call ESMF_AttributeAdd (STEMgrid,  convention=apConv, purpose=apPurp,  &
+     attrList=(/ ESMF_ATT_GRIDDED_DIM_LABELS /), &
+     rc=rc)
+if (localrc /= ESMF_SUCCESS) return
+
+call ESMF_AttributeSet(STEMgrid, ESMF_ATT_GRIDDED_DIM_LABELS, &
+    valueList=(/"longitude", "latitude "/), &
+    convention=apConv, purpose=apPurp, rc=localrc)
+if (localrc /= ESMF_SUCCESS) return
+
+call ESMF_AttributeAdd (STEMfield,  convention=apConv, purpose=apPurp,  &
+     attrList=(/ ESMF_ATT_UNGRIDDED_DIM_LABELS /), &
+     rc=rc)
+if (localrc /= ESMF_SUCCESS) return
+
+call ESMF_AttributeSet(STEMfield, ESMF_ATT_UNGRIDDED_DIM_LABELS, &
+    valueList=(/"level", "time "/), &
+    convention=apConv, purpose=apPurp, rc=localrc)
+if (localrc /= ESMF_SUCCESS) return
+
+call ESMF_FieldWrite(STEMfield, "STEMfield.nc", &
+    convention=apConv, purpose=apPurp, rc=localrc)
+if (localrc /= ESMF_SUCCESS) return
+
+! Destroy the Fields and Grids
 call ESMF_FieldDestroy(field, rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
-! Free the grids
 call ESMF_GridDestroy(grid, rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
 ! return answer based on correct flag
 if (correct) then
-rc=ESMF_SUCCESS
+    rc=ESMF_SUCCESS
 else
-rc=ESMF_FAILURE
+    rc=ESMF_FAILURE
 endif
 
 end subroutine test_fieldread
