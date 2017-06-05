@@ -130,7 +130,7 @@ call ESMF_AttributeSet(STEMfield, ESMF_ATT_UNGRIDDED_DIM_LABELS, &
     convention=apConv, purpose=apPurp, rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
-call ESMF_FieldWrite(STEMfield, "STEMfield.nc", &
+call ESMF_FieldWrite(STEMfield, overwrite=.true., "STEMfield.nc", &
     convention=apConv, purpose=apPurp, rc=localrc)
 if (localrc /= ESMF_SUCCESS) return
 
