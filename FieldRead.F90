@@ -51,11 +51,11 @@ correct=.true.
 rc=ESMF_SUCCESS
 
 vulcangrid = "/software/co2flux/FieldRead/vulcangrid.10.2012.nc"
-! vulcangrid = "/home/ryan/sandbox/gara-regridding/vulcangrid.10.2012.nc"
 vulcandata = "/software/co2flux/SurfaceFluxData/VULCAN/reversed_vulcan_fossilCO2_ioapi.nc"
-! vulcandata = "/home/ryan/sandbox/gara-regridding/reversed_vulcan_fossilCO2_ioapi.nc"
 stem_grid_file = "/software/co2flux/Saved_WRF_runs/subset_wrfout.nc"
-! stem_grid_file = "/home/ryan/sandbox/gara-regridding/subset_wrfout.nc"
+! vulcangrid = "data/vulcangrid.10.2012.nc"
+! vulcandata = "data/reversed_vulcan_fossilCO2_ioapi.nc"
+! stem_grid_file = "data/subset_wrfout.nc"
 
 timesteps = 365*24
 ! timesteps = 24

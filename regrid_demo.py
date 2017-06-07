@@ -3,8 +3,8 @@ import numpy as np
 
 CASA_grid_file = "/software/co2flux/SurfaceFluxData/CASA/modified_GEE.3hrly.1x1.25.2015.nc"
 STEM_grid_file = "/software/co2flux/Saved_WRF_runs/subset_wrfout.nc"
-# CASA_grid_file = "/home/ryan/sandbox/gara-regridding/modified_GEE.3hrly.1x1.25.2015.nc"
-# STEM_grid_file = "/home/ryan/sandbox/gara-regridding/subset_wrfout.nc"
+# CASA_grid_file = "data/modified_GEE.3hrly.1x1.25.2015.nc"
+# STEM_grid_file = "data/subset_wrfout.nc"
 
 plot = True
 init = True
