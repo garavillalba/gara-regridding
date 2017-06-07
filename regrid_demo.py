@@ -2,10 +2,10 @@
 import ESMF
 import numpy as np
 
-# CASA_grid_file = "/software/co2flux/SurfaceFluxData/CASA/GEE.3hrly.1x1.25.2015.nc"
-CASA_grid_file = "/home/ryan/sandbox/gara-regridding/GEE.3hrly.1x1.25.2015.nc"
-# STEM_grid_file = "/software/co2flux/Saved_WRF_runs/subset_wrfout.nc"
-STEM_grid_file = "/home/ryan/sandbox/gara-regridding/subset_wrfout.nc"
+CASA_grid_file = "/software/co2flux/SurfaceFluxData/CASA/modified_GEE.3hrly.1x1.25.2015.nc"
+#CASA_grid_file = "/home/ryan/sandbox/gara-regridding/GEE.3hrly.1x1.25.2015.nc"
+STEM_grid_file = "/software/co2flux/Saved_WRF_runs/subset_wrfout.nc"
+#STEM_grid_file = "/home/ryan/sandbox/gara-regridding/subset_wrfout.nc"
 
 def initialize_field(field):
     realdata = False
@@ -82,7 +82,7 @@ esmpy = ESMF.Manager(debug=True)
 
 # Create a destination grid from a GRIDSPEC formatted file.
 srcgrid = ESMF.Grid(filename=CASA_grid_file, filetype=ESMF.FileFormat.GRIDSPEC,
-                    add_corner_stagger=True, is_sphere=False)
+                    add_corner_stagger=False, is_sphere=False)
 dstgrid = ESMF.Grid(filename=STEM_grid_file, filetype=ESMF.FileFormat.GRIDSPEC,
                     add_corner_stagger=True, is_sphere=False)
 
