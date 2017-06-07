@@ -10,9 +10,10 @@ rd = ocgis.RequestDataset(PATH_IN)
 vc = rd.get_variable_collection()
 
 # now create a grid and write bounds
-grid = ocgis.Grid(vc["lat"].extract(), vc['lon'].extract(), crs=ocgis.crs.Spherical())
-grid.set_extrapolated_bounds('bounds_lat', 'bounds_lon', 'corners')
+grid = ocgis.Grid(vc["lon"].extract(), vc['lat'].extract(), crs=ocgis.crs.Spherical())
+grid.set_extrapolated_bounds('bounds_lon', 'bounds_lat', 'corners')
 grid.x.bounds.attrs.pop('units')
 grid.y.bounds.attrs.pop('units')
 
-grid.parent.write(PATH_OUT)
+# write from Field to get the variables
+ocgis.Field(grid=grid, variables=vc["GEE"].extract()).write(PATH_OUT)
