@@ -3,8 +3,8 @@ import numpy as np
 
 CASA_grid_file = "/software/co2flux/SurfaceFluxData/CASA/modified_GEE.3hrly.1x1.25.2015.nc"
 STEM_grid_file = "/software/co2flux/Saved_WRF_runs/subset_wrfout.nc"
-# CASA_grid_file = "data/modified_GEE.3hrly.1x1.25.2015.nc"
-# STEM_grid_file = "data/subset_wrfout.nc"
+CASA_grid_file = "data/modified_GEE.3hrly.1x1.25.2015.nc"
+STEM_grid_file = "data/subset_wrfout.nc"
 
 plot = True
 init = True
@@ -70,11 +70,11 @@ def plot_sol(srclons, srclats, srcfield, dstlons, dstlats, interpfield):
 
     ax = fig.add_subplot(1, 2, 2)
     im = ax.imshow(interpfield.data.T, cmap='hot', aspect='auto', origin="lower",
-                   extent=[np.min(dstlats), np.max(dstlats), np.min(dstlons), np.max(dstlons)])
-    ax.set_xbound(lower=np.min(dstlats), upper=np.max(dstlats))
-    ax.set_ybound(lower=np.min(dstlons), upper=np.max(dstlons))
-    ax.set_xlabel("Latitude")
-    ax.set_ylabel("Longitude")
+                   extent=[np.min(dstlons), np.max(dstlons), np.min(dstlats), np.max(dstlats)])
+    ax.set_xbound(lower=np.min(dstlons), upper=np.max(dstlons))
+    ax.set_ybound(lower=np.min(dstlats), upper=np.max(dstlats))
+    ax.set_xlabel("Longitude")
+    ax.set_ylabel("Latitude")
     ax.set_title("Conservative Regrid Solution on 9km WRF-STEM")
 
     fig.subplots_adjust(right=0.8)

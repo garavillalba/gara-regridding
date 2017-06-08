@@ -2,12 +2,13 @@ import ocgis
 import numpy as np
 
 
-CSV_IN = '/software/co2flux/SurfaceFluxData/VULCAN/vulcangrid.10.2012.csv'
-NC_OUT = '/software/co2flux/SurfaceFluxData/VULCAN/vulcangrid.10.2012.nc'
-# CSV_IN = 'data/vulcangrid.10.2012.csv'
-# NC_OUT = 'data/vulcangrid.10.2012.nc'
+# CSV_IN = '/software/co2flux/SurfaceFluxData/VULCAN/vulcangrid.10.2012.csv'
+# NC_OUT = '/software/co2flux/SurfaceFluxData/VULCAN/vulcangrid.10.2012.nc'
+CSV_IN = 'data/vulcangrid.10.2012.csv'
+NC_OUT = 'data/vulcangrid.10.2012-2.nc'
 
-gridres = 10./2.;
+# grid resolution acquired from ocgis.Grid (print grid.resolution)
+gridres = 0.0988216/2.;
 
 rd = ocgis.RequestDataset(CSV_IN)
 field = rd.get()
