@@ -3,8 +3,8 @@ import numpy as np
 
 CASA_grid_file = "/software/co2flux/SurfaceFluxData/CASA/modified_GEE.3hrly.1x1.25.2015.nc"
 STEM_grid_file = "/software/co2flux/Saved_WRF_runs/subset_wrfout.nc"
-CASA_grid_file = "data/modified_GEE.3hrly.1x1.25.2015.nc"
-STEM_grid_file = "data/subset_wrfout.nc"
+# CASA_grid_file = "data/modified_GEE.3hrly.1x1.25.2015.nc"
+# STEM_grid_file = "data/subset_wrfout.nc"
 
 plot = True
 init = True
@@ -17,6 +17,7 @@ except:
 
 try:
     import matplotlib
+    import matplotlib.pyplot as plt
 except:
     plot = False
 
@@ -29,10 +30,10 @@ def initialize_field(field):
 
         f = nc.Dataset(CASA_grid_file)
         gee = f.variables['GEE']
+        gee = np.swapaxes(gee,1,2)
         # import pdb; pdb.set_trace()
-        gee = gee[0, :, :]
         realdata = True
-        field.data[:] = gee.T
+        field.data[:] = gee[0:23,:,:]
     else:
         field.data[:] = 42.0
 
@@ -94,8 +95,8 @@ srcgrid = ESMF.Grid(filename=CASA_grid_file, filetype=ESMF.FileFormat.GRIDSPEC,
 dstgrid = ESMF.Grid(filename=STEM_grid_file, filetype=ESMF.FileFormat.GRIDSPEC,
                     add_corner_stagger=True, is_sphere=False)
 
-srcfield = ESMF.Field(srcgrid, "srcfield", staggerloc=ESMF.StaggerLoc.CENTER)
-dstfield = ESMF.Field(dstgrid, "dstfield", staggerloc=ESMF.StaggerLoc.CENTER)
+srcfield = ESMF.Field(srcgrid, "srcfield", staggerloc=ESMF.StaggerLoc.CENTER, ndbounds=[24])
+dstfield = ESMF.Field(dstgrid, "dstfield", staggerloc=ESMF.StaggerLoc.CENTER, ndbounds=[24])
 
 srcfield = initialize_field(srcfield)
 
