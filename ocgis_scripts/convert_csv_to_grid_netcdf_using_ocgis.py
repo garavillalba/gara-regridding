@@ -33,5 +33,6 @@ grid = ocgis.Grid(xc, yc, crs=ocgis.crs.Spherical())
 grid.set_extrapolated_bounds('x_bounds', 'y_bounds', 'corners')
 
 ocgis.Field(grid=grid).write(NC_OUT)
+vc.write(NC_OUT)
 
 ocgis.RequestDataset(NC_OUT).inspect()

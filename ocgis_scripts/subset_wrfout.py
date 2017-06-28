@@ -30,3 +30,4 @@ grid.x.bounds.attrs.pop('units')
 grid.y.bounds.attrs.pop('units')
 
 grid.parent.write(PATH_OUT)
+vc.write(PATH_OUT)
